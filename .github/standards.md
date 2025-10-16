@@ -11,6 +11,8 @@ Creating a mobile app in React Native that allows users to take a selfie. Based 
 - **Database:** MongoDB (cloud)
 - **Language:** JavaScript
 - **ML/AI:** Custom model trained separately (not integrated via AI SDKs)
+- **Containerization:** Docker (multi-service setup using `docker-compose`)
+
 
 ## 🚀 Project Flow
 
