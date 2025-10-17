@@ -1,0 +1,12 @@
+[
+    {
+      "userId": "U001",
+      "emotion": "happy",
+      "lightLevel": "low"
+    },
+    {
+      "userId": "U002",
+      "emotion": "sad",
+      "lightLevel": "high"
+    }
+  ]
