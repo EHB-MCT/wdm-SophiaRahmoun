@@ -4,18 +4,29 @@ import Analysis from "../models/Analysis.js";
 import { readFile } from "fs/promises";
 
 export const insertFakeData = async (req, res) => {
-  try {
-    const jsonData = await readFile(new URL("../data/fakeData.json", import.meta.url));
-    const fakeData = JSON.parse(jsonData);
+	console.log("📥 POST /api/analysis/seed called (fallback version)");
+	try {
+		await Analysis.deleteMany({});
 
-    await Analysis.deleteMany({});
-    const inserted = await Analysis.insertMany(fakeData);
-    res.json(inserted);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+		const inserted = await Analysis.insertMany([
+			{
+				userId: "U001",
+				emotion: "happy",
+				lightLevel: "low",
+			},
+			{
+				userId: "U002",
+				emotion: "sad",
+				lightLevel: "high",
+			},
+		]);
+
+		res.json(inserted);
+	} catch (err) {
+		console.error("❌ insert failed:", err);
+		res.status(500).json({ error: err.message });
+	}
 };
-
 
 export const getAllAnalysis = async (req, res) => {
 	try {
@@ -27,3 +38,13 @@ export const getAllAnalysis = async (req, res) => {
 	}
 };
 
+export const createAnalysis = async (req, res) => {
+	try {
+		const { userId, emotion, lightLevel } = req.body;
+		const newAnalysis = new Analysis({ userId, emotion, lightLevel });
+		const saved = await newAnalysis.save();
+		res.status(201).json(saved);
+	} catch (err) {
+		res.status(400).json({ error: err.message });
+	}
+};
