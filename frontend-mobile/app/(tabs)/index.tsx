@@ -113,5 +113,5 @@ const styles = StyleSheet.create({
 });
 
 <Link href="/selfie">
-	<ThemedText type="link">📸 Prendre un selfie</ThemedText>
+	<ThemedText type="link">take a selfie</ThemedText>
 </Link>;

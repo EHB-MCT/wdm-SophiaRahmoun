@@ -12,9 +12,6 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"@tensorflow/tfjs-node": "^4.10.0",
-		"@vladmandic/face-api": "^1.7.12",
-		"canvas": "^2.11.2",
 		"cors": "^2.8.5",
 		"dotenv": "^17.2.3",
 		"express": "^5.1.0",
