@@ -1,31 +1,31 @@
-version: "3.9"
 
 services:
 
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: backend
     ports:
       - "3000:3000"
     env_file:
-      - ./backend/.env.template
+      - ./backend/.env
+    volumes:
+      - ./backend/uploads:/app/uploads
     depends_on:
       - db
-      - ml-service
-
-  ml-service:
-    build: ./ml-service
-    container_name: ml-service
-    ports:
-      - "5000:5000"
 
   admin-dashboard:
-    build: ./admin-dashboard
+    build: 
+      context: ./admin-dashboard
+      dockerfile: Dockerfile
     container_name: admin-dashboard
     ports:
-      - "5173:3000"
+      - "5173:5173"
     depends_on:
       - backend
+    environment:
+      - VITE_API_URL=http://backend:3000
 
   db:
     image: mongo:7
@@ -34,6 +34,8 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=selfie_analysis
 
 volumes:
   mongo_data:
