@@ -8,7 +8,7 @@ const selfieAnalysisSchema = new mongoose.Schema({
   },
   imageUrl: {
     type: String,
-    required: false, // Made optional since analysis can come without image
+    required: false, 
   },
   faceDetected: {
     type: Boolean,

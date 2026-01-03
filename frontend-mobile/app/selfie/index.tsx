@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useCameraPermissions, CameraView } from "expo-camera";
 import {
-  View,
-  Image,
-  StyleSheet,
-  Text,
-  ActivityIndicator,
-  Button,
-  Alert,
-  Platform,
-  Dimensions,
+	View,
+	Image,
+	StyleSheet,
+	Text,
+	ScrollView,
+	ActivityIndicator,
+	Button,
+	Alert,
+	Platform,
+	Dimensions,
+	Animated,
+	Easing,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { getApiUrl, getBaseUrl, getDebugInfo } from "../../config/network";
@@ -23,7 +26,19 @@ interface AnalysisResult {
 	dominantEmotion?: string;
 	brightness: number;
 	backgroundClutter: number;
+	deviceInfo?: {
+		platform?: string;
+		appVersion?: string;
+		timestamp?: string;
+		ip?: string;
+		userAgent?: string;
+		locationHint?: {
+			country?: string;
+		};
+	};
+	id?: string;
 }
+type UiMode = "neutral" | "fun" | "serious";
 
 export default function SelfieScreen() {
 	const [permission, requestPermission] = useCameraPermissions();
@@ -31,16 +46,19 @@ export default function SelfieScreen() {
 	const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [uid, setUid] = useState<string | null>(null);
+	const [retakeLockedUntil, setRetakeLockedUntil] = useState<number>(0);
+	const shakeX = useRef(new Animated.Value(0)).current;
+	const bounceY = useRef(new Animated.Value(0)).current;
 	const [interactionStartTime, setInteractionStartTime] = useState<number>(
 		Date.now()
 	);
+	const retakeLocked = Date.now() < retakeLockedUntil;
 	const cameraRef = useRef<CameraView>(null);
 
-	// Initialize on component mount
 	useEffect(() => {
 		loadUid();
 		// Debug: Show current API configuration
-		console.log("🌐 API Configuration:", getDebugInfo());
+		console.log(" API Config:", getDebugInfo());
 	}, []);
 
 	const loadUid = async () => {
@@ -76,8 +94,7 @@ export default function SelfieScreen() {
 		};
 	};
 
-	// Deterministic analysis based on image properties and device info
-	const analyzeFaceFromImage = (imageUri: string, deviceInfo: any) => {
+	const analyzeFaceFromImage = (imageUri: string) => {
 		console.log("📊 Performing deterministic analysis on:", imageUri);
 
 		// Use consistent hash of image URI for deterministic behavior
@@ -91,12 +108,13 @@ export default function SelfieScreen() {
 		const emotions = ["happy", "neutral", "sad", "angry"];
 		const dominantEmotion = emotions[imageHash % emotions.length];
 
-		console.log("Deterministic analysis result:", {
+		console.log("📊 Deterministic analysis result:", {
 			faceDetected,
 			estimatedAge,
 			gender,
 			dominantEmotion,
 		});
+		const retakeLocked = Date.now() < retakeLockedUntil;
 
 		return {
 			faceDetected,
@@ -113,7 +131,6 @@ export default function SelfieScreen() {
 	) => {
 		console.log("📈 Calculating deterministic metrics for:", imageUri);
 
-		// Use image URI and interaction duration for deterministic calculation
 		const imageFactor = (imageUri.length % 50) / 50; // 0-1 normalized
 		const durationFactor = Math.min(interactionDuration / 10000, 1); // Normalize duration
 
@@ -155,18 +172,22 @@ export default function SelfieScreen() {
 		}
 	};
 
-	if (!permission) {
-		return <View style={styles.center} />;
-	}
+	const renderCameraGate = () => {
+		if (!permission) {
+			return <View style={styles.center} />;
+		}
 
-	if (!permission.granted) {
-		return (
-			<View style={styles.center}>
-				<Text style={styles.centerText}>La caméra est bloquée</Text>
-				<Button title="Allow access" onPress={requestPermission} />
-			</View>
-		);
-	}
+		if (!permission.granted) {
+			return (
+				<View style={styles.center}>
+					<Text style={styles.centerText}>Camera is blocked</Text>
+					<Button title="allow camera" onPress={requestPermission} />
+				</View>
+			);
+		}
+
+		return null;
+	};
 
 	async function takePhoto() {
 		try {
@@ -185,7 +206,7 @@ export default function SelfieScreen() {
 
 			console.log("PHOTO URI:", photoData.uri);
 		} catch (err) {
-			console.error("Error:", err);
+			console.error("Erreur lors de la capture:", err);
 		}
 	}
 
@@ -196,7 +217,7 @@ export default function SelfieScreen() {
 		try {
 			// Perform deterministic face analysis
 			const deviceInfo = getDeviceInfo();
-			const faceAnalysis = analyzeFaceFromImage(photo, deviceInfo);
+			const faceAnalysis = analyzeFaceFromImage(photo);
 
 			// Calculate deterministic image metrics
 			const interactionDuration = Date.now() - interactionStartTime;
@@ -212,7 +233,7 @@ export default function SelfieScreen() {
 				timestamp: new Date(),
 			};
 
-			console.log(" Sending analysis data:", analysisData);
+			console.log("📤 Sending analysis data:", analysisData);
 
 			const response = await fetch(getApiUrl("/api/selfie/analyze"), {
 				method: "POST",
@@ -231,6 +252,11 @@ export default function SelfieScreen() {
 
 			const result = await response.json();
 			setAnalysis(result.analysis);
+			const now = Date.now();
+			const shouldPunish =
+				(result.analysis.backgroundClutter ?? 0) > 0.5 ||
+				(result.analysis.brightness ?? 1) < 0.3;
+			if (shouldPunish) setRetakeLockedUntil(now + 3000);
 
 			if (result.uid && !uid) {
 				await storeUid(result.uid);
@@ -278,17 +304,159 @@ export default function SelfieScreen() {
 
 		return theme;
 	};
+	const getUiProfile = () => {
+		if (!analysis) {
+			return {
+				bg: "#000",
+				panelBg: "rgba(0,0,0,0.80)",
+				accent: "#ffffff",
+				mode: "neutral" as UiMode,
+				shake: false,
+				bounce: false,
+				punish: false,
+				taunt: "",
+			};
+		}
 
+		const age = analysis.estimatedAge ?? 30;
+		const emotion = analysis.dominantEmotion ?? "neutral";
+		const bright = analysis.brightness;
+		const clutter = analysis.backgroundClutter;
+
+		// base
+		let profile = {
+			bg: "#000",
+			panelBg: "rgba(0,0,0,0.80)",
+			accent: "#ffffff",
+			mode: "neutral" as const,
+			shake: false,
+			bounce: false,
+			punish: false,
+			taunt: "",
+		};
+
+		// <25 = fun & extreme
+		if (age < 25) {
+			profile = {
+				...profile,
+				bg: "#1a0033",
+				panelBg: "rgba(255,255,255,0.10)",
+				accent: "#ff4dff",
+				bounce: true,
+				taunt: "✨ Looking young? The system is *watching* you anyway.",
+			};
+		} else {
+			profile = {
+				...profile,
+				bg: "#001a33",
+				panelBg: "rgba(0,0,0,0.85)",
+				accent: "#3ea6ff",
+				taunt: "🔎 Profile updated. You are now easier to predict.",
+			};
+		}
+
+		// sad/angry = oppressive
+		if (emotion === "sad" || emotion === "angry") {
+			profile = {
+				...profile,
+				bg: "#0d1117",
+				panelBg: "rgba(10,10,10,0.92)",
+				accent: "#ff3b30",
+				shake: true,
+				taunt: "⚠️ Emotional instability detected. Monitoring increased.",
+			};
+		}
+
+		// brightness low = picky UI
+		if (bright < 0.3) {
+			profile = {
+				...profile,
+				punish: true,
+				taunt:
+					"☁️ Low light = low trust. Improve conditions to regain control.",
+			};
+		}
+
+		// clutter high = punish harder
+		if (clutter > 0.5) {
+			profile = {
+				...profile,
+				punish: true,
+				taunt: "🧠 High clutter detected. You’re easier to stereotype.",
+			};
+		}
+
+		return profile;
+	};
+
+	const ui = getUiProfile();
 	const theme = getTheme();
+	useEffect(() => {
+		if (!analysis) return;
+
+		// SHAKE animation
+		if (ui.shake) {
+			Animated.loop(
+				Animated.sequence([
+					Animated.timing(shakeX, {
+						toValue: 6,
+						duration: 60,
+						useNativeDriver: true,
+					}),
+					Animated.timing(shakeX, {
+						toValue: -6,
+						duration: 60,
+						useNativeDriver: true,
+					}),
+					Animated.timing(shakeX, {
+						toValue: 4,
+						duration: 60,
+						useNativeDriver: true,
+					}),
+					Animated.timing(shakeX, {
+						toValue: 0,
+						duration: 60,
+						useNativeDriver: true,
+					}),
+				])
+			).start();
+		} else {
+			shakeX.setValue(0);
+		}
+
+		// BOUNCE animation
+		if (ui.bounce) {
+			Animated.loop(
+				Animated.sequence([
+					Animated.timing(bounceY, {
+						toValue: -8,
+						duration: 350,
+						easing: Easing.out(Easing.quad),
+						useNativeDriver: true,
+					}),
+					Animated.timing(bounceY, {
+						toValue: 0,
+						duration: 350,
+						easing: Easing.in(Easing.quad),
+						useNativeDriver: true,
+					}),
+				])
+			).start();
+		} else {
+			bounceY.setValue(0);
+		}
+	}, [analysis, ui.shake, ui.bounce]);
 
 	return (
-		<View style={[styles.container, theme]}>
+		<View style={[styles.container, { backgroundColor: ui.bg }]}>
+			{renderCameraGate()}
+
 			{!photo ? (
 				<View style={styles.cameraContainer}>
 					<CameraView ref={cameraRef} facing="front" style={styles.camera} />
 
 					<View style={styles.buttonOverlay}>
-						<Button title=" Take pic !" onPress={takePhoto} color="black" />
+						<Button title="Take a selfie !" onPress={takePhoto} color="black" />
 					</View>
 				</View>
 			) : (
@@ -297,12 +465,13 @@ export default function SelfieScreen() {
 
 					<View style={styles.buttonOverlay}>
 						<Button
-							title="Retake"
+							title={retakeLocked ? "retake (locked)" : "retake"}
 							onPress={() => setPhoto(null)}
 							color="black"
+							disabled={retakeLocked}
 						/>
 						<Button
-							title="Analyze"
+							title="analyze"
 							onPress={analyzeSelfie}
 							disabled={loading}
 							color="black"
@@ -318,84 +487,89 @@ export default function SelfieScreen() {
 
 					{analysis && (
 						<View style={styles.analysisOverlay}>
-							<View style={styles.analysisContainer}>
-								<Text style={styles.analysisTitle}>Results</Text>
-
-								<View style={styles.analysisItem}>
-									<Text style={styles.analysisLabel}>Face detected:</Text>
-									<Text style={styles.analysisValue}>
-										{analysis.faceDetected ? "yes" : "no"}
-									</Text>
-								</View>
-
-								{analysis.faceDetected && (
-									<>
-										{analysis.estimatedAge && (
-											<View style={styles.analysisItem}>
-												<Text style={styles.analysisLabel}>Estimated age:</Text>
-												<Text style={styles.analysisValue}>
-													{analysis.estimatedAge} years
-												</Text>
-											</View>
-										)}
-
-										{analysis.gender && (
-											<View style={styles.analysisItem}>
-												<Text style={styles.analysisLabel}>Gender:</Text>
-												<Text style={styles.analysisValue}>
-													{analysis.gender === "male"
-														? "Male"
-														: analysis.gender === "female"
-															? "Female"
-															: "Unknown"}
-												</Text>
-											</View>
-										)}
-
-										{analysis.dominantEmotion && (
-											<View style={styles.analysisItem}>
-												<Text style={styles.analysisLabel}>
-													Dominant emotion:
-												</Text>
-												<Text style={styles.analysisValue}>
-													{analysis.dominantEmotion}
-												</Text>
-											</View>
-										)}
-									</>
-								)}
-
-								<View style={styles.analysisItem}>
-									<Text style={styles.analysisLabel}>Brightness:</Text>
-									<Text style={styles.analysisValue}>
-										{Math.round(analysis.brightness * 100)}%
-										{analysis.brightness < 0.3 && " (low)"}
-										{analysis.brightness > 0.7 && " (high)"}
-									</Text>
-								</View>
-
-								<View style={styles.analysisItem}>
-									<Text style={styles.analysisLabel}>Background clutter:</Text>
-									<Text style={styles.analysisValue}>
-										{Math.round(analysis.backgroundClutter * 100)}%
-										{analysis.backgroundClutter > 0.5 && " (high)"}
-									</Text>
-								</View>
-
-								{uid && (
+							<Animated.View
+								style={[
+									styles.analysisContainer,
+									{
+										backgroundColor: ui.panelBg,
+										borderColor: ui.accent,
+										transform: [
+											{ translateX: shakeX },
+											{ translateY: bounceY },
+										],
+									},
+									ui.punish ? styles.punishPanel : null,
+								]}
+							>
+								<Text style={styles.analysisTitle}>🧠 Analysis Result</Text>
+								{analysis.id && (
 									<View style={styles.analysisItem}>
-										<Text style={styles.analysisLabel}>ID :</Text>
-										<Text style={styles.analysisValue}>{uid}</Text>
+										<Text style={styles.analysisLabel}>Analysis ID</Text>
+										<Text style={styles.analysisValue}>{analysis.id}</Text>
 									</View>
 								)}
-
-								{analysis.brightness < 0.3 && (
-									<Text style={styles.suggestion}>
-										💡 Suggestion: The lighting is low. Try moving to a brighter
-										environment.
+								<View style={styles.analysisItem}>
+									<Text style={styles.analysisLabel}>Face detected</Text>
+									<Text style={styles.analysisValue}>
+										{analysis.faceDetected ? "Yes" : "No"}
 									</Text>
+								</View>
+								{analysis.gender && (
+									<View style={styles.analysisItem}>
+										<Text style={styles.analysisLabel}>Gender</Text>
+										<Text style={styles.analysisValue}>{analysis.gender}</Text>
+									</View>
 								)}
-							</View>
+								{analysis.estimatedAge && (
+									<View style={styles.analysisItem}>
+										<Text style={styles.analysisLabel}>Estimated age</Text>
+										<Text style={styles.analysisValue}>
+											{analysis.estimatedAge}
+										</Text>
+									</View>
+								)}
+								{analysis.dominantEmotion && (
+									<View style={styles.analysisItem}>
+										<Text style={styles.analysisLabel}>Emotion</Text>
+										<Text style={styles.analysisValue}>
+											{analysis.dominantEmotion}
+										</Text>
+									</View>
+								)}
+								<View style={styles.analysisItem}>
+									<Text style={styles.analysisLabel}>Brightness</Text>
+									<Text style={styles.analysisValue}>
+										{analysis.brightness.toFixed(2)}
+									</Text>
+								</View>
+								<View style={styles.analysisItem}>
+									<Text style={styles.analysisLabel}>Background clutter</Text>
+									<Text style={styles.analysisValue}>
+										{analysis.backgroundClutter.toFixed(2)}
+									</Text>
+								</View>
+								{analysis.deviceInfo?.platform && (
+									<View style={styles.analysisItem}>
+										<Text style={styles.analysisLabel}>Platform</Text>
+										<Text style={styles.analysisValue}>
+											{analysis.deviceInfo.platform}
+										</Text>
+									</View>
+								)}
+								{analysis.deviceInfo?.timestamp && (
+									<View style={styles.analysisItem}>
+										<Text style={styles.analysisLabel}>Captured at</Text>
+										<Text style={styles.analysisValue}>
+											{new Date(analysis.deviceInfo.timestamp).toLocaleString()}
+										</Text>
+									</View>
+								)}
+								{ui.taunt !== "" && (
+									<Text style={[styles.tauntText, { color: ui.accent }]}>
+										{ui.taunt}
+									</Text>
+								)}{" "}
+							</Animated.View>
 						</View>
 					)}
 				</View>
@@ -458,7 +632,7 @@ const styles = StyleSheet.create({
 	},
 	analysisOverlay: {
 		position: "absolute",
-		bottom: 20,
+		bottom: 120,
 		left: 10,
 		right: 10,
 		maxHeight: "60%",
@@ -514,5 +688,20 @@ const styles = StyleSheet.create({
 	},
 	darkTheme: {
 		backgroundColor: "#0d1117",
+	},
+	punishPanel: {
+		borderWidth: 2,
+		borderStyle: "dashed",
+		shadowOpacity: 0.9,
+		shadowRadius: 12,
+	},
+
+	tauntText: {
+		marginTop: 6,
+		marginBottom: 12,
+		fontSize: 13,
+		textAlign: "center",
+		fontWeight: "700",
+		letterSpacing: 0.2,
 	},
 });
