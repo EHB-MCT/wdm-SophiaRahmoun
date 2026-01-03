@@ -20,3 +20,4 @@ export const getDebugInfo = () => {
     timestamp: new Date().toISOString(),
   };
 };
+
