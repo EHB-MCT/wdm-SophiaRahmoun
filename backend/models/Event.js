@@ -9,7 +9,7 @@ const eventSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ["navigation", "click", "selfie_upload", "analysis_complete"],
+   // enum: ["navigation", "click", "selfie_upload", "analysis_complete"],
   },
   data: {
     type: Object,

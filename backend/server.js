@@ -31,18 +31,14 @@ app.get("/", (req, res) => {
 	res.send("API is running");
 });
 
-const MONGO_URI =
-	process.env.MONGO_URI || "mongodb://localhost:27017/wdm";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/wdm";
 
-mongoose
-	.connect(process.env.MONGO_URI, {
-	})
-	.then(() => {
-		console.log(" MongoDB connected!");
-	});
+mongoose.connect(process.env.MONGO_URI, {}).then(() => {
+	console.log(" MongoDB connected!");
+});
 
 app.get("/test-seed", insertFakeData);
 
-app.listen(3000, () => {
-	console.log(` Server running at http://localhost:3000`);
+app.listen(3000, "0.0.0.0", () => {
+	console.log(` Server running at 0.0.0.0:3000`);
 });

@@ -55,8 +55,8 @@ export const analyzeSelfie = async (req, res) => {
       // Behavioral data
       deviceInfo: sanitizedData.deviceInfo || {},
       interactionDuration: sanitizedData.interactionDuration,
-      timestamp: sanitizedData.timestamp || new Date(),
-    });
+      timestamp: new Date(sanitizedData.timestamp || Date.now()),
+        });
     
     // Save all records
     await Promise.all([

@@ -64,7 +64,14 @@ export const sanitizeAnalysisData = (data) => {
   
   // Ensure proper data types
   sanitized.faceDetected = Boolean(sanitized.faceDetected);
-  sanitized.brightness = Number(sanitized.brightness);
+  const clamp01 = (n) => {
+    const v = Number(n);
+    if (Number.isNaN(v)) return 0;
+    return Math.min(1, Math.max(0, v));
+  };
+  
+  sanitized.brightness = clamp01(sanitized.brightness);
+  sanitized.backgroundClutter = clamp01(sanitized.backgroundClutter);
   
   if (sanitized.estimatedAge !== undefined) {
     sanitized.estimatedAge = Math.round(Number(sanitized.estimatedAge));
