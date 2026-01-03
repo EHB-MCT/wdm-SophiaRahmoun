@@ -23,7 +23,7 @@ const selfieAnalysisSchema = new mongoose.Schema({
   },
   dominantEmotion: {
     type: String,
-    enum: ["happy", "sad", "angry", "fearful", "disgusted", "surprised", "neutral", "unknown"],
+    enum: ["happy", "sad", "angry", "fearful", "disgusted", "surprised", "neutral", "anxious", "unknown"],
   },
   brightness: {
     type: Number,
@@ -37,7 +37,19 @@ const selfieAnalysisSchema = new mongoose.Schema({
     min: 0,
     max: 1,
   },
-  // Behavioral data fields
+  // Enhanced behavioral and metadata fields
+  ip: {
+    type: String,
+  },
+  location: {
+    country: String,
+    city: String,
+  },
+  device: {
+    platform: String,
+    os: String,
+    browser: String,
+  },
   deviceInfo: {
     type: mongoose.Schema.Types.Mixed,
     default: {},

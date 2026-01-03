@@ -34,6 +34,32 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+<<<<<<< Updated upstream
+=======
+    environment:
+      - MONGO_INITDB_DATABASE=selfie_analysis
+
+  # accessible at http://localhost:8081/selfie
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "8081:3000"
+    env_file:
+      - .env
+    environment:
+      # connect to the docker network service name (db)
+      ME_CONFIG_MONGODB_URL: mongodb://db:27017/
+      # enable basic auth like Matteo (set creds in .env)
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
+      # serve mongo-express under /selfie (so http://localhost:8081/selfie)
+      ME_CONFIG_SITE_BASEURL: /selfie
+    depends_on:
+      - db
+>>>>>>> Stashed changes
 
 volumes:
   mongo_data:
