@@ -80,13 +80,6 @@ const getLocationFromIP = (ip) => {
 
 export const analyzeSelfie = async (req, res) => {
   try {
-<<<<<<< Updated upstream
-    if (!req.file) {
-      return res.status(400).json({ error: "No image file provided" });
-    }
-
-    const { uid } = req.body;
-=======
     const analysisData = req.body;
     
     const validation = validateAnalysisData(analysisData);
@@ -99,7 +92,6 @@ export const analyzeSelfie = async (req, res) => {
     
     const sanitizedData = sanitizeAnalysisData(analysisData);
     
->>>>>>> Stashed changes
     let user;
 
     if (uid) {
@@ -113,25 +105,6 @@ export const analyzeSelfie = async (req, res) => {
       user = new User({ uid: newUid });
     }
 
-<<<<<<< Updated upstream
-    const imagePath = req.file.path;
-    
-    // Perform face analysis
-    const faceAnalysis = await analyzeFace(imagePath);
-    
-    // Calculate image metrics
-    const imageMetrics = await calculateImageMetrics(imagePath);
-    
-    // Create selfie analysis record
-    const analysis = new SelfieAnalysis({
-      uid: user.uid,
-      imageUrl: `/uploads/${path.basename(imagePath)}`,
-      ...faceAnalysis,
-      ...imageMetrics,
-    });
-    
-    // Save all records
-=======
     let imageUrl = "";
     if (req.file) {
       imageUrl = `/uploads/${path.basename(req.file.path)}`;
@@ -174,7 +147,6 @@ export const analyzeSelfie = async (req, res) => {
     }
 
     // Save user and create events
->>>>>>> Stashed changes
     await Promise.all([
       user.save(),
       Event.create({
@@ -186,17 +158,11 @@ export const analyzeSelfie = async (req, res) => {
         uid: user.uid,
         type: "analysis_complete",
         data: { 
-<<<<<<< Updated upstream
-          faceDetected: faceAnalysis.faceDetected,
-          emotion: faceAnalysis.dominantEmotion,
-          brightness: imageMetrics.brightness,
-=======
           faceDetected: sanitizedData.faceDetected,
           emotion: enhancedEmotion,
           brightness: sanitizedData.brightness,
           device: detectedDevice.platform,
           location: location.country,
->>>>>>> Stashed changes
         },
       }),
     ]);
@@ -207,16 +173,6 @@ export const analyzeSelfie = async (req, res) => {
     res.json({
       uid: user.uid,
       analysis: {
-<<<<<<< Updated upstream
-        faceDetected: faceAnalysis.faceDetected,
-        estimatedAge: faceAnalysis.estimatedAge,
-        gender: faceAnalysis.gender,
-        dominantEmotion: faceAnalysis.dominantEmotion,
-        brightness: imageMetrics.brightness,
-        backgroundClutter: imageMetrics.backgroundClutter,
-        speculativeBMI: imageMetrics.speculativeBMI,
-        speculativeSocialClass: imageMetrics.speculativeSocialClass,
-=======
         id: analysis._id,
         faceDetected: analysis.faceDetected,
         estimatedAge: analysis.estimatedAge,
@@ -229,16 +185,10 @@ export const analyzeSelfie = async (req, res) => {
           location: analysis.location,
           device: analysis.device,
         },
->>>>>>> Stashed changes
       },
     });
   } catch (error) {
-<<<<<<< Updated upstream
-    console.error("Selfie analysis error:", error);
-    res.status(500).json({ error: error.message });
-=======
     console.error("❌ Selfie analysis save error:", error);
     res.status(500).json({ error: "Failed to save analysis" });
->>>>>>> Stashed changes
   }
 };

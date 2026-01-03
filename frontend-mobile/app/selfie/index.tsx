@@ -1,17 +1,18 @@
+import React, { useState, useRef, useEffect } from "react";
 import { useCameraPermissions, CameraView } from "expo-camera";
 import {
-	View,
-	Image,
-	StyleSheet,
-	Text,
-	ScrollView,
-	ActivityIndicator,
-	Button,
-	Alert,
-	Platform,
-	Dimensions,
+  View,
+  Image,
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+  Button,
+  Alert,
+  Platform,
+  Dimensions,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
+import { getApiUrl, getBaseUrl, getDebugInfo } from "../../config/network";
 
 const { width, height } = Dimensions.get("window");
 

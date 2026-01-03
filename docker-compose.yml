@@ -34,8 +34,6 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-<<<<<<< Updated upstream
-=======
     environment:
       - MONGO_INITDB_DATABASE=selfie_analysis
 
@@ -59,7 +57,6 @@ services:
       ME_CONFIG_SITE_BASEURL: /selfie
     depends_on:
       - db
->>>>>>> Stashed changes
 
 volumes:
   mongo_data:
