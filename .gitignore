@@ -8,3 +8,4 @@ expo-env.d.ts
 
 .envbackend/test-response.js
 .env
+backend/test-response.js
