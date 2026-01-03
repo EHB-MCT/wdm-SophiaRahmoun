@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useCameraPermissions, CameraView } from "expo-camera";
 import { 
   View, 
@@ -168,13 +169,13 @@ export default function SelfieScreen() {
 
       setInteractionStartTime(Date.now());
 
-      const photoData = await camera.takePictureAsync({
-        quality: 1,
-        base64: true,
-      });
+			const photoData = await camera.takePictureAsync({
+				quality: 1,
+				base64: true,
+			});
 
-      setPhoto(photoData.uri);
-      setAnalysis(null); // Reset previous analysis
+			setPhoto(photoData.uri);
+			setAnalysis(null); // Reset previous analysis
 
       console.log("PHOTO URI:", photoData.uri);
     } catch (err) {
@@ -182,8 +183,8 @@ export default function SelfieScreen() {
     }
   }
 
-  const analyzeSelfie = async () => {
-    if (!photo) return;
+	const analyzeSelfie = async () => {
+		if (!photo) return;
 
     setLoading(true);
     try {
@@ -220,12 +221,12 @@ export default function SelfieScreen() {
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
-      setAnalysis(result.analysis);
-      
-      if (result.uid && !uid) {
-        await storeUid(result.uid);
-      }
+			const result = await response.json();
+			setAnalysis(result.analysis);
+
+			if (result.uid && !uid) {
+				await storeUid(result.uid);
+			}
 
       console.log("✅ Analysis saved successfully:", result);
       
@@ -245,27 +246,30 @@ export default function SelfieScreen() {
     }
   };
 
-  const getTheme = () => {
-    if (!analysis) return styles.defaultTheme;
-    
-    let theme = { ...styles.defaultTheme };
-    
-    // Age-based theming
-    if (analysis.estimatedAge && analysis.estimatedAge < 25) {
-      theme = { ...theme, ...styles.playfulTheme };
-    } else {
-      theme = { ...theme, ...styles.seriousTheme };
-    }
-    
-    // Emotion-based theming
-    if (analysis.dominantEmotion === "sad" || analysis.dominantEmotion === "angry") {
-      theme = { ...theme, ...styles.darkTheme };
-    }
-    
-    return theme;
-  };
+	const getTheme = () => {
+		if (!analysis) return styles.defaultTheme;
 
-  const theme = getTheme();
+		let theme = { ...styles.defaultTheme };
+
+		// Age-based theming
+		if (analysis.estimatedAge && analysis.estimatedAge < 25) {
+			theme = { ...theme, ...styles.playfulTheme };
+		} else {
+			theme = { ...theme, ...styles.seriousTheme };
+		}
+
+		// Emotion-based theming
+		if (
+			analysis.dominantEmotion === "sad" ||
+			analysis.dominantEmotion === "angry"
+		) {
+			theme = { ...theme, ...styles.darkTheme };
+		}
+
+		return theme;
+	};
+
+	const theme = getTheme();
 
   return (
     <View style={[styles.container, theme]}>

@@ -6,6 +6,4 @@ node_modules
 expo-env.d.ts
 # @end expo-cli
 
-.envbackend/test-response.js
 .env
-backend/test-response.js

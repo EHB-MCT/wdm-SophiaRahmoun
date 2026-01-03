@@ -5,9 +5,6 @@
 expo-env.d.ts
 # @end expo-cli
 
-#editor swp
-*.swp
-
 .env
-
-config/
+.expo/
+node_modules/
