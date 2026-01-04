@@ -1,31 +1,30 @@
-version: "3.9"
-
 services:
-
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: backend
     ports:
       - "3000:3000"
     env_file:
-      - ./backend/.env.template
+      - .env
+    volumes:
+      - ./backend/uploads:/app/uploads
     depends_on:
       - db
-      - ml-service
-
-  ml-service:
-    build: ./ml-service
-    container_name: ml-service
-    ports:
-      - "5000:5000"
 
   admin-dashboard:
-    build: ./admin-dashboard
+    build:
+      context: ./admin-dashboard
+      dockerfile: Dockerfile
     container_name: admin-dashboard
     ports:
-      - "5173:3000"
+      - "5173:5173"
+      - "5173:5173"
     depends_on:
       - backend
+    environment:
+      - VITE_API_URL=http://localhost:3000
 
   db:
     image: mongo:7
@@ -34,6 +33,29 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=selfie_analysis
+
+  # accessible at http://localhost:8081/selfie
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      # connect to the docker network service name (db)
+      ME_CONFIG_MONGODB_URL: mongodb://db:27017/
+      # enable basic auth like Matteo (set creds in .env)
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
+      # serve mongo-express under /selfie (so http://localhost:8081/selfie)
+      ME_CONFIG_SITE_BASEURL: /selfie
+    depends_on:
+      - db
 
 volumes:
   mongo_data:

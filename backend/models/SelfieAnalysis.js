@@ -8,7 +8,7 @@ const selfieAnalysisSchema = new mongoose.Schema({
   },
   imageUrl: {
     type: String,
-    required: true,
+    required: false, 
   },
   faceDetected: {
     type: Boolean,
@@ -28,22 +28,37 @@ const selfieAnalysisSchema = new mongoose.Schema({
   brightness: {
     type: Number,
     required: true,
+    min: 0,
+    max: 1,
   },
   backgroundClutter: {
     type: Number,
     required: true,
+    min: 0,
+    max: 1,
   },
-  speculativeBMI: {
+  // Behavioral data fields
+  deviceInfo: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+  interactionDuration: {
     type: Number,
+    default: 0,
   },
-  speculativeSocialClass: {
-    type: String,
-    enum: ["low", "medium", "high"],
+  timestamp: {
+    type: Date,
+    default: Date.now,
   },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
+
+// Index for better query performance
+selfieAnalysisSchema.index({ uid: 1, createdAt: -1 });
+selfieAnalysisSchema.index({ dominantEmotion: 1 });
+selfieAnalysisSchema.index({ estimatedAge: 1 });
 
 export default mongoose.model("SelfieAnalysis", selfieAnalysisSchema);
