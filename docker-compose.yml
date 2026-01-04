@@ -48,12 +48,10 @@ services:
     environment:
       # connect to the docker network service name (db)
       ME_CONFIG_MONGODB_URL: mongodb://db:27017/
-      # enable basic auth like Matteo (set creds in .env)
       ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
       ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
       ME_CONFIG_BASICAUTH_ENABLED: "true"
-      # serve mongo-express under /selfie (so http://localhost:8081/selfie)
-      ME_CONFIG_SITE_BASEURL: /selfie
+
     depends_on:
       - db
 
