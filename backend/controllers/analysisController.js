@@ -6,7 +6,7 @@ import {
 import {
 	validateAnalysisData,
 	sanitizeAnalysisData,
-} from "../utils/analysisValidation.js";
+} from "../utils/validation.js";
 
 export const insertFakeData = async (req, res) => {
 	console.log("📥 POST /api/analysis/seed called (fallback version)");
