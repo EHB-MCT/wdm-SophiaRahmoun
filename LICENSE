@@ -1,0 +1,47 @@
+Educational Analysis License (EAL 1.0)
+
+Copyright (c) 2024 [Student Name], [University Name]
+
+This license governs use of the Selfie Analysis Pipeline project ("the Work") and is granted to any individual or institution that accepts its terms.
+
+### PREAMBLE
+
+This Work is an educational project designed to demonstrate algorithmic bias and ethical concerns in biometric-adjacent systems. It is NOT intended for real-world analysis, decision-making, or commercial application.
+
+### PERMISSIONS
+
+1. **Educational Use**: You may use, modify, and distribute this Work for educational, research, or academic purposes.
+2. **Study and Analysis**: You may examine the code, algorithms, and documentation to understand how bias is demonstrated.
+3. **Classroom Integration**: Instructors may use this Work in courses to teach about algorithmic ethics and bias.
+
+### CONDITIONS
+
+1. **Non-Commercial**: This Work may not be used for commercial purposes, revenue generation, or product development.
+2. **No Real-World Application**: You must not use this system for actual face analysis, user profiling, or decision-making affecting real individuals.
+3. **Attribution**: All distributions must include the original copyright notice and this license.
+4. **Educational Context**: Any public presentation of this Work must clearly state its educational, non-scientific nature.
+
+### PROHIBITIONS
+
+1. **Biometric Misuse**: You may not use this Work as a foundation for real biometric analysis systems.
+2. **Decision-Making**: Results from this system must not be used to make decisions about real people.
+3. **Data Collection**: You may not deploy this system to collect personal data without explicit academic approval.
+4. **Commercial Exploitation**: You may not sell, license, or otherwise commercialize this Work or derivatives.
+
+### DISCLAIMER
+
+THIS WORK IS PROVIDED "AS IS" FOR EDUCATIONAL PURPOSES ONLY. The analysis results are intentionally simulated, biased, and non-scientific. They must not be interpreted as accurate or valid for any real-world application.
+
+The authors disclaim all liability for misuse of this Work or its results. Users are solely responsible for ensuring compliance with applicable laws and ethical guidelines.
+
+### ACKNOWLEDGMENT
+
+By using this Work, you acknowledge that:
+- It is an educational demonstration, not a scientific tool
+- Its results are intentionally biased and unreliable
+- You will not use it for real-world profiling or decision-making
+- You understand the ethical concerns it is designed to highlight
+
+### JURISDICTION
+
+This license is governed by the laws of [Jurisdiction] and any disputes shall be resolved through academic mediation rather than legal proceedings.

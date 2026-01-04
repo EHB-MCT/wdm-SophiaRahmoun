@@ -1,221 +1,108 @@
 # Selfie Analysis Pipeline
 
-A fully local selfie analysis system with no external API dependencies, running via Docker Compose.
+An educational project demonstrating how algorithmic systems create biased outcomes through indirect data collection when direct biometric access is unavailable.
+
+## Conceptual Overview
+
+This project illustrates the "data detour" phenomenon described in *Weapons of Math Destruction*: when systems cannot access real biometric data, they infer characteristics through behavioral and contextual proxies, leading to repetitive and biased conclusions.
+
+**Why this matters:** Real face analysis APIs require expensive licensing and ethical approvals. Educational systems must therefore simulate analysis through indirect metrics (interaction time, device info, image metadata), which creates systematic bias and reinforces stereotypes.
 
 ## Architecture
 
-- **Backend** (Node.js + Express + MongoDB): Local face analysis using face-api.js
-- **Frontend Mobile** (Expo React Native): Selfie capture and analysis
-- **Admin Dashboard** (Vite + React): User management and analytics
-- **Database** (MongoDB): Storing users, analyses, and events
-
-## Features
-
-### Backend (/backend)
-- **Face Analysis**: Local face detection, age/gender estimation, emotion recognition
-- **Image Metrics**: Brightness calculation and background clutter detection
-- **User Management**: Persistent UID generation and tracking
-- **Admin APIs**: User listing, detailed analytics, and filtering
-
-### Frontend Mobile (/frontend-mobile)
-- **Camera Integration**: Front-facing camera selfie capture
-- **Analysis Upload**: POST to `/api/selfie/analyze` with optional UID
-- **UI Theming**: Dynamic theming based on age, emotion, and brightness
-- **Local Storage**: UID persistence using SecureStore
-
-### Admin Dashboard (/admin-dashboard)
-- **User Listing**: All users with selfie counts and metadata
-- **User Details**: Individual analysis history and events
-- **Analytics**: Aggregated insights with filtering capabilities
-- **Data Visualization**: Emotion/gender distribution charts
+- **Backend**: Node.js/Express API with MongoDB
+- **Admin Dashboard**: React analytics interface  
+- **Mobile App**: React Native selfie capture and analysis
+- **Database**: MongoDB for user profiles and analysis results
 
 ## Quick Start
 
 ### Prerequisites
 - Docker and Docker Compose
-- Git
+- Node.js 18+
+- Expo CLI (`npm install -g @expo/cli`)
 
-### Setup
+### Running the System
 
-1. **Clone and navigate:**
-   ```bash
-   git clone <repository-url>
-   cd wdm-SophiaRahmoun
-   ```
+1. **Backend Services** (port 3001, admin on port 5173):
+```bash
+docker-compose up --build
+```
 
-2. **Setup Face API Models:**
-   ```bash
-   # Download face-api.js models to backend/models/
-   mkdir -p backend/models
-   
-   # Required model files (download from face-api.js GitHub):
-   # - tiny_face_detector_model-manifest.json
-   # - tiny_face_detector_model.weights
-   # - age_gender_net-manifest.json  
-   # - age_gender_model.weights
-   # - face_expression_model-manifest.json
-   # - face_expression_model.weights
-   
-   # Alternative: Use a download script or manual download from:
-   # https://github.com/justadudewhohacks/face-api.js/tree/master/weights
-   ```
-
-3. **Environment Configuration:**
-   ```bash
-   # Copy environment template
-   cp .env.template .env
-   
-   # Update if needed (defaults work for Docker)
-   ```
-
-4. **Start the system:**
-   ```bash
-   docker compose up --build
-   ```
-
-5. **Access the applications:**
-   - **Backend API**: http://localhost:3000
-   - **Admin Dashboard**: http://localhost:5173
-   - **Mobile App**: Run `expo start` in `frontend-mobile/`
-
-## API Endpoints
-
-### Selfie Analysis
-- `POST /api/selfie/analyze`
-  - **Body**: multipart/form-data with `image` file and optional `uid`
-  - **Response**: Analysis results with UID (generated if not provided)
-
-### Admin APIs
-- `GET /api/admin/users` - List all users with basic stats
-- `GET /api/admin/users/:uid` - User detail with analyses and events
-- `GET /api/admin/analytics` - Aggregated analytics with filters
-
-## Database Schema
-
-### Users
-- `uid`: Unique identifier
-- `createdAt`, `lastSeen`: Timestamps
-- `selfieCount`: Number of analyses
-- `deviceInfo`: Future expansion
-
-### SelfieAnalyses
-- `uid`: User reference
-- `imageUrl`: Path to stored image
-- Face analysis: `faceDetected`, `estimatedAge`, `gender`, `dominantEmotion`
-- Image metrics: `brightness`, `backgroundClutter`
-- Speculative metrics: `speculativeBMI`, `speculativeSocialClass`
-
-### Events
-- `uid`: User reference
-- `type`: `navigation`, `click`, `selfie_upload`, `analysis_complete`
-- `data`: Event-specific data
-- `timestamp`: Event time
-
-## Docker Configuration
-
-### Services
-- **backend**: Node.js 18 LTS with canvas build dependencies
-- **admin-dashboard**: Vite dev server with hot reload
-- **db**: MongoDB 7 with persistent data volume
-
-### Volumes
-- `mongo_data`: MongoDB persistence
-- `./backend/uploads:/app/uploads`: Image uploads
-- `./backend/models:/app/models`: Face API models
-
-## Mobile Development
-
-### Running the Expo App
+2. **Mobile App** (requires separate terminal):
 ```bash
 cd frontend-mobile
 npm install
-expo start
+npx expo start
 ```
+Scan the QR code with Expo Go app.
 
-### Features
-- Camera permissions handling
-- Real-time preview
-- Image upload with progress
-- Dynamic UI theming based on results
-- Secure UID storage
+### Port Configuration
+- **Backend API**: `http://localhost:3001`
+- **Admin Dashboard**: `http://localhost:5173` 
+- **MongoDB**: `localhost:27017`
+- **Mobile App**: Via Expo tunnel
 
-## Admin Dashboard
+## What to Observe
 
-### Features
-- User management with filtering
-- Individual user analysis history
-- Real-time analytics dashboard
-- Responsive design
-- Data visualization
+### Admin Dashboard
+- User profiling patterns
+- Demographic clustering
+- Analysis completion rates
+- Device-based correlations
 
-### Filtering Options
-- Age ranges: 18-25, 26-35, 36-50, 51+
-- Emotions: happy, sad, angry, neutral
-- Date ranges: 7 days, 30 days, 90 days
+### Mobile Experience
+- Deterministic "analysis" results
+- Behavioral data collection (interaction time, retakes)
+- Contextual profiling (device type, platform)
+- Emotion-based UI theming
 
-## Development
+### Key Learning Points
+1. **Proxy Data**: The system infers characteristics from device info, interaction patterns, and image metadata
+2. **Reinforcement Loop**: Similar users receive similar "analysis" results, creating echo chambers
+3. **Contextual Bias**: Platform, time, and device type influence outcomes
 
-### Branch Strategy
-- `main`: Production-ready stable code
-- `develop`: Integration branch
-- `feature/*`: Individual features
-- All commits follow Conventional Commits format
+## Disclaimer
 
-### Commit Messages
-```
-feat(scope): description
-fix(scope): description  
-chore(scope): description
-docs(scope): description
-```
+All analysis metrics are simulated for educational purposes. This system does not perform real face recognition or emotion detection. The project demonstrates how proxy-based systems can create biased outcomes, not to validate such approaches for real-world use.
 
-### Testing Pipeline
-```bash
-# Test complete pipeline
-docker compose up --build
+## Academic Context
 
-# Individual service testing
-docker compose up backend
-docker compose up admin-dashboard
-```
+Created for [Course Name] as a critical exploration of algorithmic bias in biometric-adjacent systems. The implementation intentionally uses deterministic functions to highlight how "objective" analysis can reproduce systematic biases when based on indirect data signals.
 
-## Notes
+## Project Standards
 
-### Face Analysis Models
-The system requires face-api.js model files in `backend/models/`. The models are:
-- Tiny Face Detector (smaller, faster)
-- Age & Gender Recognition
-- Face Expression Recognition
+This project follows strict development standards and conventions. For detailed information about coding practices, architecture decisions, and project structure, see [`.github/PROJECT_STANDARDS.md`](.github/PROJECT_STANDARDS.md).
 
-### Speculative Metrics
-BMI and social class metrics are clearly labeled as speculative/fake and use random heuristics. These are placeholder implementations for demonstration purposes.
+## Sources
 
-### Performance Considerations
-- Face analysis runs locally but requires models to be loaded first
-- Image processing uses canvas for pixel manipulation
-- MongoDB indexes should be added for production use
+### React Native & Expo
+- https://reactnative.dev/docs/environment-setup
+- https://docs.expo.dev/get-started/set-up-your-environment/
+- https://medium.com/@dwinTech/how-to-set-up-env-for-a-react-native-app-337c3fba72af
+- https://stackoverflow.com/questions/40985027/unable-to-resolve-module-in-react-native-app
+- https://github.com/facebook/metro/issues/1337
 
-## Troubleshooting
+### Docker & DevOps
+- https://forums.docker.com/t/docker-for-windows-wont-launch/15725
+- https://hub.docker.com/_/mongo-express
+- https://stackoverflow.com/questions/69552636/cannot-launch-docker-desktop-for-mac
+- https://www.docker.com/blog/how-to-dockerize-react-app/
+- https://create-react-app.dev/docs/getting-started/
 
-### Common Issues
-1. **Models not loading**: Ensure model files are in `backend/models/`
-2. **Canvas build errors**: Docker includes required build dependencies
-3. **Mongo connection**: Ensure `db` service is running before `backend`
-4. **Upload errors**: Check file size limits and directory permissions
+### Git & Version Control
+- https://git-scm.com/docs/git-stash
+- https://docs.github.com/fr/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/resolving-a-merge-conflict-using-the-command-line
+- https://stackoverflow.com/questions/22424142/error-your-local-changes-to-the-following-files-would-be-overwritten-by-checkou
+- https://stackoverflow.com/questions/47241098/accept-incoming-change-not-appearing-in-vs-code
+- https://stackoverflow.com/questions/47630950/how-can-i-switch-to-another-branch-in-git
 
-### Debug Commands
-```bash
-# Check service logs
-docker compose logs backend
-docker compose logs admin-dashboard
+### Face Analysis & Bias Research
+- https://luxand.cloud/face-recognition-blog/guide-how-to-build-emotion-recognition-application-with-javascript
+- https://justadudewhohacks.github.io/face-api.js/docs/index.html
 
-# Check MongoDB connection
-docker compose exec db mongo selfie_analysis
+### AI Assistance
+- https://chatgpt.com/share/6959e29c-712c-8006-9a29-9e60854a798a
 
-# Restart specific service
-docker compose restart backend
-```
-
-## License
-
-Educational use only. Face analysis and speculative metrics should not be used for production decision-making.
+### General Resources
+- https://www.aihr.com/blog/code-of-conduct-template/
