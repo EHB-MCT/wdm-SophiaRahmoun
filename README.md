@@ -117,6 +117,7 @@ This project follows strict development standards and conventions. For detailed 
 ### AI Assistance
 
 - https://chatgpt.com/share/6959e29c-712c-8006-9a29-9e60854a798a
+  - https://chatgpt.com/gg/v/695b25ee310c8193aa74cd7983a0bb44?token=jkF6pG3S-nj8AsSYQSoLlQ
 
 ### General Resources
 
