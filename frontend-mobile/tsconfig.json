@@ -1,0 +1,20 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "frontend-mobile/.expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "frontend-mobile/app/CameraScreen.jsx",
+    ".expo/types/**/*.ts"
+  ]
+}
